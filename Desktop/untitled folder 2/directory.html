@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Directory // unfiltered.</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        espresso: '#0B0604',  
+                        roast: '#1B100B',     
+                        cream: '#F5EFE6',     
+                        matcha: '#CCFF00',    
+                        caramel: '#C68B59',
+                    },
+                    fontFamily: { sans: ['Plus Jakarta Sans', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+    <style>
+    .brutal-border { border: 2px solid #F5EFE6; }
+    .brutal-shadow { box-shadow: 4px 4px 0px 0px #F5EFE6; }
+    
+    /* Caramel Latte Palette */
+    body { 
+        background-color: #2D1A11;
+        background-image: 
+            radial-gradient(at 0% 0%, #5C3421 0px, transparent 50%),
+            radial-gradient(at 100% 0%, #4A2818 0px, transparent 50%);
+        min-height: 100vh; 
+    }
+    
+    .student-card { 
+        background-color: #472817; 
+        transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+    }
+    .student-card:hover { transform: translateY(-5px); border-color: #CCFF00; }
+</style>
+</head>
+<body class="text-cream font-sans">
+
+    <header class="w-full border-b-2 border-cream bg-espresso/40 backdrop-blur-md">
+        <div class="max-w-7xl mx-auto px-8 py-5 flex justify-between items-center">
+            <a href="home.html" class="text-3xl font-extrabold tracking-tighter text-caramel">unfiltered<span class="text-matcha">.</span></a>
+            <a href="home.html" class="text-xs font-bold hover:text-matcha">← BACK TO VIBE</a>
+        </div>
+    </header>
+
+    <section class="max-w-7xl mx-auto px-6 py-20">
+        <div class="mb-12">
+            <h3 class="text-4xl font-extrabold tracking-tight">FULL DIRECTORY</h3>
+            <p class="text-gray-400 mt-2">Filter the collective by university.</p>
+            
+            <div class="flex flex-wrap gap-2 mt-6">
+    <button onclick="filterUni('ALL', this)" id="btn-ALL" class="bg-matcha text-espresso font-bold px-4 py-2 text-xs brutal-border">ALL</button>
+    <button onclick="filterUni('MDX', this)" id="btn-MDX" class="bg-roast text-cream font-bold px-4 py-2 text-xs brutal-border hover:bg-matcha hover:text-espresso">MDX</button>
+    <button onclick="filterUni('UOWD', this)" id="btn-UOWD" class="bg-roast text-cream font-bold px-4 py-2 text-xs brutal-border hover:bg-matcha hover:text-espresso">UOWD</button>
+    <button onclick="filterUni('HWU', this)" id="btn-HWU" class="bg-roast text-cream font-bold px-4 py-2 text-xs brutal-border hover:bg-matcha hover:text-espresso">HWU</button>
+    <button onclick="filterUni('MUR', this)" id="btn-MUR" class="bg-roast text-cream font-bold px-4 py-2 text-xs brutal-border hover:bg-matcha hover:text-espresso">MUR</button>
+    <button onclick="filterUni('CUR', this)" id="btn-CUR" class="bg-roast text-cream font-bold px-4 py-2 text-xs brutal-border hover:bg-matcha hover:text-espresso">CUR</button>
+</div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" id="directory-grid">
+            <p class="text-gray-500">Connecting to matrix...</p>
+        </div>
+    </section>
+
+    <script>
+        const SUPABASE_URL = "https://cwneumeguuzwkznfwadw.supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN3bmV1bWVndXV6d2t6bmZ3YWR3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMwMjAwMDMsImV4cCI6MjA5ODU5NjAwM30.zcHhWwSQb2DjpCgLHkzYSmLlseHhekKzcSXVtbxukH8";
+        
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        let allStudents = [];
+
+        async function fetchAllStudents() {
+            const grid = document.getElementById('directory-grid');
+            let { data: students, error } = await _supabase.from('students').select('*').order('created_at', { ascending: false });
+            
+            if (error) {
+                grid.innerHTML = '<p class="text-red-500">Error loading data.</p>';
+                return;
+            }
+            
+            allStudents = students;
+            renderStudents(students);
+        }
+
+        function renderStudents(data) {
+    const grid = document.getElementById('directory-grid');
+    grid.innerHTML = '';
+    
+    data.forEach(student => {
+        const pfp = student.photo_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=150';
+        
+        // Handle interests: Split by comma and create small tags
+        const interestsArray = student.interests ? student.interests.split(',').map(i => i.trim()) : [];
+        const interestsHtml = interestsArray.map(interest => 
+            `<span class="text-[9px] font-bold bg-espresso/50 text-cream px-2 py-0.5 border border-cream/20">${interest}</span>`
+        ).join('');
+        
+        const card = document.createElement('div');
+        card.className = "student-card bg-'#0B0604' brutal-border p-6 flex flex-col justify-between";
+        card.innerHTML = `
+            <div>
+                <img src="${pfp}" class="w-12 h-12 object-cover brutal-border mb-4 bg-zinc-800" alt="pfp">
+                <div class="flex justify-between items-start">
+                    <span class="text-[10px] font-bold bg-espresso text-matcha px-2 py-0.5 brutal-border">${student.university}</span>
+                    <span class="text-xs text-gray-400">${student.year}</span>
+                </div>
+                <h4 class="text-lg font-bold mt-2 text-cream">${student.name}</h4>
+                <p class="text-xs text-gray-400 mb-3">${student.course}</p>
+                
+                <div class="flex flex-wrap gap-1 mb-4">
+                    ${interestsHtml}
+                </div>
+            </div>
+            <a href="https://instagram.com/${student.instagram.replace('@','')}" target="_blank" class="mt-2 text-sm font-bold text-matcha hover:underline block">
+                ${student.instagram.startsWith('@') ? student.instagram : '@' + student.instagram} ↗
+            </a>
+        `;
+        grid.appendChild(card);
+    });
+
+}
+
+        function filterUni(uni, btnElement) {
+    // 1. Reset all button styles
+    const buttons = ['ALL', 'MDX', 'UOWD', 'HWU', 'MUR', 'CUR'];
+    buttons.forEach(id => {
+        const btn = document.getElementById(`btn-${id}`);
+        btn.classList.remove('bg-matcha', 'text-espresso');
+        btn.classList.add('bg-roast', 'text-cream');
+    });
+
+    // 2. Highlight the clicked button
+    btnElement.classList.remove('bg-roast', 'text-cream');
+    btnElement.classList.add('bg-matcha', 'text-espresso');
+
+    // 3. Filter the grid
+    if(uni === 'ALL') return renderStudents(allStudents);
+    renderStudents(allStudents.filter(s => s.university === uni));
+}
+
+        document.addEventListener('DOMContentLoaded', fetchAllStudents);
+    </script>
+</body>
+</html>

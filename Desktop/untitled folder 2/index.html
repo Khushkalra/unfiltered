@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>unfiltered. // IMPACT</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        espresso: '#0B0604',  
+                        cream: '#F5EFE6',     
+                        matcha: '#CCFF00',    
+                        caramel: '#C68B59',
+                    },
+                    fontFamily: { sans: ['Plus Jakarta Sans', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #0B0604; overflow: hidden; margin: 0; }
+        .brutal-border { border: 3px solid #F5EFE6; }
+
+        /* Heavy incoming animation for the hardware mixer */
+        @keyframes incomingMixer {
+            0% { transform: translateX(-100vw) translateY(-50%) rotate(-20deg) scale(0.8); opacity: 0; }
+            50% { opacity: 1; }
+            100% { transform: translateX(-30px) translateY(-50%) rotate(-5deg) scale(1.1); }
+        }
+        .animate-mixer-in { animation: incomingMixer 2.5s cubic-bezier(0.19, 1, 0.22, 1) forwards; }
+
+        /* Screen distortion shake on impact */
+        @keyframes impactFlash {
+            0% { background-color: #0B0604; transform: scale(1); }
+            1% { background-color: #C68B59; transform: scale(1.03) translate(-8px, 8px); }
+            4% { background-color: #F5EFE6; transform: scale(0.98) translate(8px, -8px); }
+            8% { background-color: #0B0604; transform: scale(1) translate(0, 0); }
+        }
+        .impact-active { animation: impactFlash 0.9s ease-out; }
+
+        /* Structural branding logo zoom pop */
+        .reveal-text {
+            opacity: 0;
+            transform: scale(0.75);
+            filter: blur(15px);
+            transition: all 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .reveal-text.show {
+            opacity: 1;
+            transform: scale(1);
+            filter: blur(0px);
+        }
+
+        /* Fast cross-dissolve page overlay fader */
+        #transition-overlay {
+            position: fixed;
+            inset: 0;
+            background-color: #0B0604;
+            opacity: 0;
+            z-index: 50;
+            pointer-events: none;
+            transition: opacity 0.5s ease-in-out; /* Made fast (0.5s) */
+        }
+        #transition-overlay.fade-out-active { opacity: 1; }
+    </style>
+</head>
+<body class="relative flex items-center justify-center min-h-screen font-sans text-cream select-none">
+
+    <div id="transition-overlay"></div>
+
+    <canvas id="fluidCanvas" class="absolute inset-0 w-full h-full z-10 pointer-events-none"></canvas>
+
+    <div class="absolute inset-0 flex items-center justify-center z-20 pointer-events-none overflow-hidden">
+        <div id="mixer-obj" class="animate-mixer-in absolute left-1/2 top-1/2 w-56 h-72 bg-zinc-900 brutal-border p-4 flex flex-col justify-between shadow-2xl origin-center">
+            <div class="flex justify-between items-center border-b border-cream/20 pb-2">
+                <span class="text-[9px] font-black tracking-widest text-matcha">CH_1 // INPUT</span>
+                <div class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>
+            </div>
+            <div class="grid grid-cols-3 gap-3 my-4 flex-grow">
+                <div class="w-8 h-8 rounded-full border-2 border-cream/40 flex items-center justify-center"><div class="w-1 h-4 bg-cream transform rotate-45"></div></div>
+                <div class="w-8 h-8 rounded-full border-2 border-cream/40 flex items-center justify-center"><div class="w-1 h-4 bg-cream transform -rotate-12"></div></div>
+                <div class="w-8 h-8 rounded-full border-2 border-matcha flex items-center justify-center"><div class="w-1 h-4 bg-matcha transform rotate-90"></div></div>
+                <div class="col-span-3 h-24 border border-cream/20 relative p-1 flex justify-around items-end bg-black/40">
+                    <div class="w-2 h-16 bg-zinc-700 relative flex justify-center"><div class="absolute bottom-6 w-4 h-3 bg-matcha brutal-border"></div></div>
+                    <div class="w-2 h-16 bg-zinc-700 relative flex justify-center"><div class="absolute bottom-10 w-4 h-3 bg-cream brutal-border"></div></div>
+                </div>
+            </div>
+            <span class="text-[9px] font-mono text-zinc-500">VU_METER |||||||||||||</span>
+        </div>
+    </div>
+
+    <div class="text-center z-30 px-4 pointer-events-none select-none">
+        <h1 id="brand-logo" class="reveal-text text-6xl sm:text-8xl md:text-9xl font-black tracking-tighter uppercase text-[#C68B59]">
+            unfiltered<span class="text-matcha">.</span>
+        </h1>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('fluidCanvas');
+        const ctx = canvas.getContext('2d');
+        const mixerObj = document.getElementById('mixer-obj');
+
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        let incomingCoffeeParticles = [];
+        let burstParticles = [];
+        let collisionTriggered = false;
+
+        // Initialize swirling stream of coffee approaching from the right
+        for (let i = 0; i < 60; i++) {
+            incomingCoffeeParticles.push({
+                x: canvas.width + Math.random() * 400,
+                y: canvas.height / 2 + (Math.random() - 0.5) * 120,
+                vx: -(Math.random() * 8 + 6),
+                vy: (Math.random() - 0.5) * 3,
+                radius: Math.random() * 12 + 6,
+                color: ['#C68B59', '#4A2818', '#5C3421'][Math.floor(Math.random() * 3)]
+            });
+        }
+
+        class LiquidBurst {
+            constructor(x, y, isSpark = false) {
+                this.x = x;
+                this.y = y;
+                this.isSpark = isSpark;
+                const angle = Math.random() * Math.PI * 2;
+                
+                const speed = isSpark ? (Math.random() * 22 + 8) : (Math.random() * 18 + 5);
+                this.vx = Math.cos(angle) * speed;
+                this.vy = Math.sin(angle) * speed;
+                
+                this.radius = isSpark ? (Math.random() * 3 + 1) : (Math.random() * 16 + 5);
+                this.color = isSpark ? '#CCFF00' : ['#C68B59', '#4A2818', '#5C3421', '#F5EFE6'][Math.floor(Math.random() * 4)];
+                this.alpha = 1;
+                this.gravity = isSpark ? 0.3 : 0.2;
+            }
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.vy += this.gravity;
+                this.alpha -= this.isSpark ? 0.02 : 0.006; 
+            }
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = Math.max(0, this.alpha);
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+
+        function triggerImpact(x, y) {
+            collisionTriggered = true;
+            document.body.classList.add('impact-active');
+            
+            // Spawn extensive blast particles
+            for (let i = 0; i < 250; i++) burstParticles.push(new LiquidBurst(x, y, false));
+            for (let i = 0; i < 60; i++) burstParticles.push(new LiquidBurst(x, y, true));
+
+            // CHANGED: Instantly delete the mixer from sight on impact
+            mixerObj.style.display = 'none';
+
+            // Bring the logo into frame right behind the splash window
+            setTimeout(() => {
+                document.getElementById('brand-logo').classList.add('show');
+            }, 200);
+
+            // Fast cross-fade sequence: Stay 2s, then fade out over 0.5s
+            setTimeout(() => {
+                document.getElementById('transition-overlay').classList.add('fade-out-active');
+                setTimeout(() => {
+                    window.location.href = 'home.html';
+                }, 500); // Matches the new CSS transition time
+            }, 2000); // Total logo uptime before fading out
+        }
+
+        function renderLoop() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            if (!collisionTriggered) {
+                const mixerRect = mixerObj.getBoundingClientRect();
+                const impactTargetX = canvas.width / 2 + 30;
+
+                incomingCoffeeParticles.forEach(p => {
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                    ctx.fillStyle = p.color;
+                    ctx.fill();
+
+                    if (p.x <= mixerRect.right && p.x >= mixerRect.left && !collisionTriggered) {
+                        triggerImpact(p.x, mixerRect.top + (mixerRect.height / 2));
+                    }
+                });
+
+                if (mixerRect.right >= impactTargetX) {
+                    triggerImpact(impactTargetX, mixerRect.top + (mixerRect.height / 2));
+                }
+            } else {
+                burstParticles.forEach((p, index) => {
+                    p.update();
+                    p.draw();
+                    if (p.alpha <= 0) burstParticles.splice(index, 1);
+                });
+            }
+
+            requestAnimationFrame(renderLoop);
+        }
+
+        requestAnimationFrame(renderLoop);
+    </script>
+</body>
+</html>
