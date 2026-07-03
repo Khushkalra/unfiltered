@@ -415,46 +415,70 @@
 
                 const uniLabels = { 'MDX': 'MDX DUBAI', 'UOWD': 'UOWD', 'HWU': 'HERIOT-WATT', 'MUR': 'MURDOCH', 'CUR': 'CURTIN' };
 
-                students.slice(0, 3).forEach(student =>  {
-                    const interestsArray = student.interests ? student.interests.split(',') : ['Coffee'];
-                    let tagsHtml = '';
-                    interestsArray.forEach(tag => {
-                        if(tag.trim()) tagsHtml += `<span class="text-[10px] bg-espresso px-2 py-0.5 rounded-full border border-gray-600">${tag.trim()}</span> `;
-                    });
+                // Create an object tracker to count how many cards we render per university
+    const uniCounts = { 'MDX': 0, 'UOWD': 0, 'HWU': 0, 'MUR': 0, 'CUR': 0 };
+    let totalGlobalRendered = 0;
 
-                    const fallbackImage = 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png';
-                    const renderImg = student.photo_url ? student.photo_url : fallbackImage;
+    students.forEach(student => {
+        const studentUni = student.university;
 
-                    const card = document.createElement('div');
-                    card.className = "student-card bg-roast brutal-border p-5 sm:p-6 flex flex-col justify-between";
-                    card.setAttribute('data-uni', student.university);
-                    
-                    const randomDelay = (Math.random() * -5).toFixed(2);
-                    card.style.animationDelay = `${randomDelay}s`;
+        // If we are looking at the 'ALL HUBS' state, we cap the global list at 3
+        // If a specific tab filter is active, we let your existing script hide/show them, 
+        // but we ensure each university has up to 3 cards created in the background to be shown!
+        if (uniCounts[studentUni] !== undefined) {
+            // Track how many cards we've built for this specific school
+            uniCounts[studentUni]++;
+            
+            // If this school already has its 3 latest cards generated, skip the rest of its older data
+            if (uniCounts[studentUni] > 3) return;
+        }
 
-                    card.innerHTML = `
-                        <div>
-                            <div class="flex justify-between items-start">
-                                <span class="text-[10px] font-bold bg-espresso text-matcha px-2 py-0.5 brutal-border">${uniLabels[student.university] || student.university}</span>
-                                <span class="text-xs text-gray-400">${student.year}</span>
-                            </div>
-                            <div class="flex gap-4 items-center mt-4">
-                                <div class="w-16 h-16 shrink-0 brutal-border overflow-hidden bg-zinc-800">
-                                    <img src="${renderImg}" class="w-full h-full object-cover" onerror="this.src='${fallbackImage}'">
-                                </div>
-                                <div>
-                                    <h4 class="text-lg font-bold name-field leading-tight">${student.name}</h4>
-                                    <p class="text-xs text-gray-400 major-field mt-0.5">${student.course}</p>
-                                </div>
-                            </div>
-                            <div class="flex flex-wrap gap-1.5 mt-4 interests-container">
-                                ${tagsHtml}
-                            </div>
-                        </div>
-                        <a href="https://instagram.com/${student.instagram.replace('@','')}" target="_blank" class="mt-6 inline-block text-sm font-bold text-matcha hover:underline">${student.instagram.startsWith('@') ? student.instagram : '@' + student.instagram} ↗</a>
-                    `;
-                    grid.appendChild(card);
-                });
+        const interestsArray = student.interests ? student.interests.split(',') : ['Coffee'];
+        let tagsHtml = '';
+        
+        interestsArray.forEach(tag => {
+            if(tag.trim()) tagsHtml += `<span class="text-[10px] bg-espresso px-2 py-0.5 rounded-full border border-gray-600">${tag.trim()}</span> `;
+        });
+
+        const fallbackImage = 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png';
+        const renderingImg = student.photo_url ? student.photo_url : fallbackImage;
+
+        const card = document.createElement('div');
+        card.className = "student-card bg-roast brutal-border p-5 sm:p-6 flex flex-col justify-between";
+        card.setAttribute('data-uni', student.university);
+
+        const randomDelay = (Math.random() * -5).toFixed(2);
+        card.style.animationDelay = `${randomDelay}s`;
+
+        card.innerHTML = `
+            <div>
+                <div class="flex justify-between items-start">
+                    <span class="text-[10px] font-bold bg-espresso text-matcha px-2 py-0.5 brutal-border">${uniLabels[student.university]}</span>
+                    <span class="text-xs text-gray-400">${student.year}</span>
+                </div>
+                <div class="flex gap-4 items-center mt-4">
+                    <div class="w-16 h-16 shrink-0 brutal-border overflow-hidden bg-zinc-800">
+                        <img src="${renderingImg}" class="w-full h-full object-cover" onerror="this.src='${fallbackImage}'">
+                    </div>
+                    <div>
+                        <h4 class="text-lg font-bold name-field leading-tight">${student.name}</h4>
+                        <p class="text-xs text-gray-400 major-field mt-0.5">${student.course}</p>
+                    </div>
+                </div>
+                <div class="flex flex-wrap gap-1.5 mt-4 interests-container">
+                    ${tagsHtml}
+                </div>
+            </div>
+        `;
+
+        // Append the card to the DOM container grid
+        grid.appendChild(card);
+    });
+
+    // Run your existing visibility toggles right after rendering everything
+    if (typeof executeCombinedFilter === 'function') {
+        executeCombinedFilter();
+    }
 
                 searchDirectory();
 

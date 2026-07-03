@@ -96,19 +96,21 @@
     grid.innerHTML = '';
     
     data.forEach(student => {
-        const pfp = student.photo_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=150';
-        
+        const fallbackImage = 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png';
+        const pfp = student.photo_url || fallbackImage;
+
         // Handle interests: Split by comma and create small tags
         const interestsArray = student.interests ? student.interests.split(',').map(i => i.trim()) : [];
         const interestsHtml = interestsArray.map(interest => 
             `<span class="text-[9px] font-bold bg-espresso/50 text-cream px-2 py-0.5 border border-cream/20">${interest}</span>`
         ).join('');
-        
+
         const card = document.createElement('div');
-        card.className = "student-card bg-'#0B0604' brutal-border p-6 flex flex-col justify-between";
+        card.className = "student-card bg-[#0B0604] brutal-border p-6 flex flex-col justify-between";
         card.innerHTML = `
             <div>
-                <img src="${pfp}" class="w-12 h-12 object-cover brutal-border mb-4 bg-zinc-800" alt="pfp">
+                <img src="${pfp}" class="w-12 h-12 object-cover brutal-border mb-4 bg-zinc-800" alt="pfp" onerror="this.src='${fallbackImage}'">
+                
                 <div class="flex justify-between items-start">
                     <span class="text-[10px] font-bold bg-espresso text-matcha px-2 py-0.5 brutal-border">${student.university}</span>
                     <span class="text-xs text-gray-400">${student.year}</span>
