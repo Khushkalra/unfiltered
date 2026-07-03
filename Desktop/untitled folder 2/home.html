@@ -415,24 +415,28 @@
 
                 const uniLabels = { 'MDX': 'MDX DUBAI', 'UOWD': 'UOWD', 'HWU': 'HERIOT-WATT', 'MUR': 'MURDOCH', 'CUR': 'CURTIN' };
 
-                // Create an object tracker to count how many cards we render per university
-    const uniCounts = { 'MDX': 0, 'UOWD': 0, 'HWU': 0, 'MUR': 0, 'CUR': 0 };
-    let totalGlobalRendered = 0;
+                // --- THE FIX: Create clean pools of the latest 3 profiles ---
+    const allHubsPool = students.slice(0, 3); // Get the absolute latest 3 globally
+    const universityPools = {}; // To store the latest 3 for each specific university
 
     students.forEach(student => {
-        const studentUni = student.university;
-
-        // If we are looking at the 'ALL HUBS' state, we cap the global list at 3
-        // If a specific tab filter is active, we let your existing script hide/show them, 
-        // but we ensure each university has up to 3 cards created in the background to be shown!
-        if (uniCounts[studentUni] !== undefined) {
-            // Track how many cards we've built for this specific school
-            uniCounts[studentUni]++;
-            
-            // If this school already has its 3 latest cards generated, skip the rest of its older data
-            if (uniCounts[studentUni] > 3) return;
+        const uni = student.university;
+        if (!universityPools[uni]) {
+            universityPools[uni] = [];
         }
+        if (universityPools[uni].length < 3) {
+            universityPools[uni].push(student);
+        }
+    });
 
+    // Combine them into a single, unique array of students to render
+    const uniqueStudentsToRender = new Set([...allHubsPool]);
+    Object.values(universityPools).forEach(uniStudents => {
+        uniStudents.forEach(student => uniqueStudentsToRender.add(student));
+    });
+
+    // --- RENDER THE CARDS ---
+    uniqueStudentsToRender.forEach(student => {
         const interestsArray = student.interests ? student.interests.split(',') : ['Coffee'];
         let tagsHtml = '';
         
@@ -444,6 +448,8 @@
         const renderingImg = student.photo_url ? student.photo_url : fallbackImage;
 
         const card = document.createElement('div');
+        // Add this line right below card creation:
+        if (allHubsPool.some(s => s.id === student.id)) card.setAttribute('data-global', 'true');
         card.className = "student-card bg-roast brutal-border p-5 sm:p-6 flex flex-col justify-between";
         card.setAttribute('data-uni', student.university);
 
@@ -453,7 +459,7 @@
         card.innerHTML = `
             <div>
                 <div class="flex justify-between items-start">
-                    <span class="text-[10px] font-bold bg-espresso text-matcha px-2 py-0.5 brutal-border">${uniLabels[student.university]}</span>
+                    <span class="text-[10px] font-bold bg-espresso text-matcha px-2 py-0.5 brutal-border">${uniLabels[student.university] || student.university}</span>
                     <span class="text-xs text-gray-400">${student.year}</span>
                 </div>
                 <div class="flex gap-4 items-center mt-4">
@@ -471,13 +477,24 @@
             </div>
         `;
 
-        // Append the card to the DOM container grid
         grid.appendChild(card);
     });
 
     // Run your existing visibility toggles right after rendering everything
     if (typeof executeCombinedFilter === 'function') {
         executeCombinedFilter();
+        // Paste this at the absolute end of your executeCombinedFilter function body:
+const allCards = document.querySelectorAll('.student-card');
+let visibleCount = 0;
+
+allCards.forEach(card => {
+    if (card.style.display !== 'none') {
+        visibleCount++;
+        if (visibleCount > 3) {
+            card.style.setProperty('display', 'none', 'important');
+        }
+    }
+});
     }
 
                 searchDirectory();
@@ -568,22 +585,36 @@
         function searchDirectory() {
             const searchVal = document.getElementById('directorySearch').value.toLowerCase();
             const cards = document.querySelectorAll('.student-card');
+// Keep track of how many cards we allow to be visible
+    let visibleCount = 0;
 
-            cards.forEach(card => {
-                const cardUni = card.getAttribute('data-uni');
-                const nameText = card.querySelector('.name-field').innerText.toLowerCase();
-                const majorText = card.querySelector('.major-field').innerText.toLowerCase();
+    cards.forEach(card => {
+        const cardUni = card.getAttribute('data-uni');
+        
+        // Find the text elements inside your specific card structure
+        const nameEl = card.querySelector('.name-field') || card.querySelector('h3') || card.querySelector('div');
+        const majorEl = card.querySelector('.major-field') || card.querySelector('p') || card.querySelector('span');
+        
+        const nameText = nameEl ? nameEl.innerText.toLowerCase() : '';
+        const majorText = majorEl ? majorEl.innerText.toLowerCase() : '';
 
-                const matchesUni = (currentUniversityFilter === 'ALL' || cardUni === currentUniversityFilter);
-                const matchesSearch = (nameText.includes(searchVal) || majorText.includes(searchVal));
+        // Check if it matches the current university hub filter selection
+        const matchesUni = (currentUniversityFilter === 'ALL' || cardUni === currentUniversityFilter);
+        const matchesSearch = nameText.includes(searchVal) || majorText.includes(searchVal);
 
-                if(matchesUni && matchesSearch) {
-                    card.style.display = 'flex';
-                } else {
-                    card.style.display = 'none';
-                }
-            });
+        // If it matches both filters, check our hardcoded maximum ceiling!
+        if (matchesUni && matchesSearch) {
+            visibleCount++;
+            if (visibleCount > 3) {
+                card.style.setProperty('display', 'none', 'important');
+            } else {
+                card.style.setProperty('display', 'flex', 'important');
+            }
+        } else {
+            card.style.setProperty('display', 'none', 'important');
         }
+    });
+}
     </script>
 
     <script>
@@ -615,6 +646,8 @@
 
     setInterval(initClocks, 1000);
     initClocks();
+
+    
 </script>
 </body>
 </html>
