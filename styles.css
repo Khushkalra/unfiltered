@@ -1,0 +1,132 @@
+/* NEO-BRUTALISM PARAMETERS */
+.brutal-border { border: 2px solid #F5EFE6; }
+.brutal-shadow { box-shadow: 4px 4px 0px 0px #F5EFE6; }
+.brutal-shadow-btn { box-shadow: 4px 4px 0px 0px #CCFF00; }
+
+/* HARDWARE ACCELERATION CONTAINER LAYERS */
+.pour-container {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    z-index: -1;
+    pointer-events: none;
+    overflow: hidden;
+    background: #0B0604;
+    will-change: transform;
+}
+
+/* 3D-ACCELERATED COFFEE STREAMS */
+.coffee-stream {
+    position: absolute;
+    top: -100%;
+    width: 160px;
+    height: 300%;
+    background: linear-gradient(to bottom, 
+        #0B0604 0%, 
+        #1B0F0A 20%,
+        #2D1A11 50%, 
+        #120A06 80%,
+        #0B0604 100%
+    );
+    filter: blur(40px);
+    opacity: 0.6;
+    /* Force GPU layers to prevent dropping animation execution frames */
+    transform: translate3d(0,0,0);
+    will-change: transform;
+    animation: pourAnimation 9s linear infinite;
+}
+.stream-1 { left: 8%; animation-duration: 7s; }
+.stream-2 { left: 45%; animation-duration: 12s; animation-delay: -3s; }
+.stream-3 { left: 78%; animation-duration: 10s; animation-delay: -6s; }
+
+/* RECONSTRUCTED COFFEE RIPPLE/POOL CHURN LAYER */
+.coffee-vortex {
+    position: absolute;
+    bottom: -25%; left: -15%;
+    width: 130%; height: 85%;
+    background: radial-gradient(circle at 50% 100%, #2A170E 0%, #120A06 50%, transparent 75%);
+    filter: blur(60px);
+    opacity: 0.8;
+    transform: translate3d(0,0,0);
+    will-change: transform;
+    animation: vortexAnimation 20s ease-in-out infinite alternate;
+}
+
+.crema-swirl {
+    position: absolute;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(46,25,15,0.35) 0%, transparent 65%);
+    filter: blur(25px);
+    transform: translate3d(0,0,0);
+    will-change: transform;
+    animation: swirlAnimation 25s infinite linear;
+}
+.swirl-1 { width: 500px; height: 400px; top: 10%; left: -10%; }
+.swirl-2 { width: 600px; height: 500px; bottom: 15%; right: -5%; animation-duration: 32s; animation-delay: -5s; }
+
+/* HARDWARE ACCELERATED ANIMATION KEYFRAMES */
+@keyframes pourAnimation {
+    0% { transform: translate3d(0, 0%, 0); }
+    100% { transform: translate3d(0, 33.333%, 0); }
+}
+@keyframes vortexAnimation {
+    0% { transform: translate3d(0,0,0) rotate(-6deg) scale(0.98); }
+    100% { transform: translate3d(0,0,0) rotate(6deg) scale(1.02); }
+}
+@keyframes swirlAnimation {
+    0% { transform: translate3d(0,0,0) rotate(0deg); }
+    100% { transform: translate3d(0,0,0) rotate(360deg); }
+}
+
+/* INTERACTIVE PANEL OSCILLATIONS (FLOATING CARDS) */
+.floating-panel {
+    transform: translate3d(0,0,0);
+    will-change: transform;
+    animation: floatLevelOne 6s ease-in-out infinite alternate;
+}
+.floating-panel-delay-1 {
+    transform: translate3d(0,0,0);
+    will-change: transform;
+    animation: floatLevelTwo 7s ease-in-out infinite alternate;
+    animation-delay: -2s;
+}
+.floating-panel-delay-2 {
+    transform: translate3d(0,0,0);
+    will-change: transform;
+    animation: floatLevelOne 8s ease-in-out infinite alternate;
+    animation-delay: -4s;
+}
+
+/* FLOATING MATRIX PARAMETERS ON LOADED DIRECTORY USER CARDS */
+.student-card {
+    transform: translate3d(0,0,0);
+    will-change: transform;
+    animation: floatLevelTwo 6.5s ease-in-out infinite alternate;
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease, box-shadow 0.3s ease;
+}
+.student-card:hover {
+    animation-play-state: paused; /* Locks active oscillation during cursor focus */
+    transform: translate3d(0, -10px, 0) scale(1.02) !important;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8);
+    border-color: #CCFF00;
+}
+
+@keyframes floatLevelOne {
+    0% { transform: translate3d(0, 0px, 0) rotate(0deg); }
+    50% { transform: translate3d(0, -8px, 0) rotate(0.4deg); }
+    100% { transform: translate3d(0, 2px, 0) rotate(-0.4deg); }
+}
+@keyframes floatLevelTwo {
+    0% { transform: translate3d(0, 0px, 0) rotate(0deg); }
+    50% { transform: translate3d(0, -12px, 0) rotate(-0.6deg); }
+    100% { transform: translate3d(0, 3px, 0) rotate(0.2deg); }
+}
+
+/* AMBIENT GRAIN OVERLAY SYSTEM */
+.unfiltered-grain {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    z-index: -1;
+    pointer-events: none;
+    opacity: 0.04;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+}

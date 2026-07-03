@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>unfiltered. // Coffee. Raves. Community.</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        espresso: '#0B0604',  
+                        roast: '#1B100B',     
+                        cream: '#F5EFE6',     
+                        matcha: '#CCFF00',    
+                        caramel: '#C68B59',
+                    },
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght=400;600;800&display=swap" rel="stylesheet">
+    <style>
+        .brutal-border { border: 2px solid #F5EFE6; }
+        .brutal-shadow { box-shadow: 4px 4px 0px 0px #F5EFE6; }
+        .brutal-shadow-btn { box-shadow: 4px 4px 0px 0px #CCFF00; }
+        .brutal-shadow-luma { box-shadow: 4px 4px 0px 0px #C68B59; }
+        
+        body {
+            background-color: #0B0604;
+            background-image: 
+                radial-gradient(at 0% 0%, #2A140A 0px, transparent 50%),
+                radial-gradient(at 100% 0%, #4A2818 0px, transparent 50%),
+                radial-gradient(at 50% 50%, #1A0A05 0px, transparent 60%),
+                radial-gradient(at 100% 100%, #3D2314 0px, transparent 50%),
+                radial-gradient(at 0% 100%, #633B24 0px, transparent 50%);
+            background-attachment: fixed;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Restored lower body gradient mapping */
+        .latte-glow-bg {
+            background-color: #0B0604;
+            background-image: 
+                radial-gradient(at 50% 0%, #2A140A 0px, transparent 50%),
+                radial-gradient(at 0% 50%, #4A2818 0px, transparent 50%),
+                radial-gradient(at 100% 50%, #3D2314 0px, transparent 65%),
+                radial-gradient(at 50% 100%, #1A0A05 0px, transparent 50%);
+        }
+
+        .hero-pour-wrapper {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .coffee-cup {
+            position: absolute;
+            top: 155px;
+            right: 15px; 
+            width: 110px;
+            height: 82px;
+            background-color: #F5EFE6;
+            border: 3px solid #CCFF00;
+            border-radius: 0 0 90px 90px; 
+            transform: rotate(-55deg);
+            box-shadow: -6px 6px 0px rgba(0,0,0,0.6);
+            animation: cupVibration 0.12s linear infinite alternate;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 5;
+        }
+        @media(min-width: 768px) {
+            .coffee-cup {
+                top: 140px;
+                right: 40px;
+                width: 175px;
+                height: 130px;
+                border-width: 4px;
+                box-shadow: -10px 10px 0px rgba(0,0,0,0.6);
+            }
+        }
+
+        .cup-branding {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            color: #0B0604;
+            font-weight: 800;
+            font-size: 0.75rem;
+            letter-spacing: -0.05em;
+            transform: rotate(5deg) translateY(-3px);
+        }
+        @media(min-width: 768px) {
+            .cup-branding {
+                font-size: 1.1rem;
+                transform: rotate(5deg) translateY(-5px);
+            }
+        }
+        .cup-branding span { color: #2D1A11; }
+
+        .coffee-cup::after {
+            content: '';
+            position: absolute;
+            top: 10px;
+            right: -24px;
+            width: 28px;
+            height: 42px;
+            border: 3px solid #CCFF00;
+            background-color: transparent;
+            border-radius: 0 35px 35px 0;
+            transform: rotate(15deg);
+        }
+        @media(min-width: 768px) {
+            .coffee-cup::after {
+                top: 15px;
+                right: -38px;
+                width: 48px;
+                height: 65px;
+                border-width: 4px;
+            }
+        }
+
+        .liquid-stream {
+            position: absolute;
+            top: 175px;
+            right: 88px; 
+            width: 32px;
+            height: 100%;
+            background: linear-gradient(to bottom, #1B0F0A 0%, #3A1F13 25%, #5C3421 50%, #3A1F13 75%, #1B0F0A 100%);
+            background-size: 100% 250px;
+            box-shadow: -10px 0 30px rgba(0,0,0,0.6);
+            animation: fluidDownPour 0.35s linear infinite, streamWhip 2.5s ease-in-out infinite alternate;
+            z-index: 4;
+        }
+        @media(min-width: 768px) {
+            .liquid-stream {
+                top: 170px;
+                right: 154px;
+                width: 55px;
+                height: 100%;
+            }
+        }
+
+        .student-card {
+            animation: matrixFloat 4.5s ease-in-out infinite alternate;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), border-color 0.3s ease;
+        }
+        .student-card:hover {
+            animation-play-state: paused;
+            transform: translateY(-15px) scale(1.04) rotate(0.5deg) !important;
+            border-color: #CCFF00;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.7);
+        }
+
+        @keyframes cupVibration { 0% { transform: rotate(-54.5deg) translate(0, 0); } 100% { transform: rotate(-55.5deg) translate(-1px, 0.5px); } }
+        @keyframes fluidDownPour { 0% { background-position-y: 0px; } 100% { background-position-y: 250px; } }
+        @keyframes streamWhip { 0% { transform: rotate(1deg) scaleX(0.97); } 100% { transform: rotate(-0.5deg) scaleX(1.03); } }
+        @keyframes matrixFloat { 0% { transform: translateY(0px) rotate(0deg); } 50% { transform: translateY(-12px) rotate(-0.6deg); } 100% { transform: translateY(3px) rotate(0.4deg); } }
+    </style>
+</head>
+<body class="text-cream font-sans selection:bg-matcha selection:text-espresso relative">
+
+    <header class="w-full border-b-2 border-cream sticky top-0 z-50 bg-espresso/40 backdrop-blur-md">
+        <div class="w-full px-4 sm:px-8 py-5 flex justify-between items-center">
+            <h1 class="text-xl sm:text-4xl font-extrabold tracking-tighter text-[#C68B59]">unfiltered<span class="text-matcha">.</span></h1>
+            <div class="flex gap-4 sm:gap-6 text-xs sm:text-sm font-semibold">
+                <a href="#about" class="hover:text-matcha transition">The Vibe</a>
+                <a href="#events" class="hover:text-matcha transition">Raves</a>
+                <a href="#directory" class="hover:text-matcha transition">Hubs</a>
+                <a href="#join" class="hover:text-matcha transition">Join</a>
+            </div>
+        </div>
+    </header>
+
+    <div class="relative w-full min-h-[calc(100vh-76px)] flex items-center justify-center">
+        <div class="hero-pour-wrapper">
+            <div class="liquid-stream"></div>
+            <div class="coffee-cup">
+                <div class="cup-branding">unfiltered<span>.</span></div>
+            </div>
+        </div>
+
+        <section class="relative z-10 max-w-4xl mx-auto text-center py-20 px-4 sm:px-6">
+            <div class="inline-block"><span class="text-[10px] sm:text-xs uppercase tracking-widest bg-roast brutal-border py-1 px-3 text-matcha font-bold">Dubai Knowledge Park Collective</span></div>
+            <h2 class="text-4xl sm:text-6xl md:text-8xl font-extrabold tracking-tighter mt-6 mb-6 leading-none">
+                COFFEE. RAVES.<br><span class="text-transparent bg-clip-text bg-gradient-to-r from-cream via-matcha to-cream">UNFILTERED.</span>
+            </h2>
+            <p class="text-sm sm:text-base md:text-lg text-gray-400 max-w-xl mx-auto mb-10 px-2">
+                The high-octane community connecting students from across Dubai's top campuses over exceptional roasts and underground heavy beats.
+            </p>
+            <div class="flex flex-col sm:flex-row justify-center gap-4 px-4 sm:px-0">
+                <a href="#join" class="bg-matcha text-espresso font-extrabold px-6 sm:px-8 py-3 sm:py-4 brutal-border brutal-shadow-btn hover:translate-x-1 hover:translate-y-1 transition-all text-center text-sm sm:text-base">JOIN THE COMMUNITY</a>
+            </div>
+        </section>
+    </div>
+
+    <div class="w-full latte-glow-bg relative z-20 border-t-2 border-cream">
+        
+        <section id="about" class="max-w-7xl mx-auto px-4 sm:px-6 py-20 sm:py-32">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+                <div class="lg:col-span-5 space-y-6">
+                    <div class="text-xs uppercase tracking-widest text-matcha font-mono">// SOUNDS FROM UNFILTERED</div>
+                    <h3 class="text-3xl sm:text-4xl md:text-6xl font-extrabold tracking-tighter leading-none">THE SOUND OF AMINO ACIDS & HIGH FREQUENCIES.</h3>
+                    <p class="text-sm sm:text-base text-gray-400 leading-relaxed">
+                        We aren't another generic university networking society. We operate at the intersection of serious espresso extraction engineering and industrial sub-bass raves. No filtered corporate small talk. Just pure energy, unfiltered community curation, and deep-house blueprints.
+                    </p>
+                    <div class="p-4 bg-roast brutal-border brutal-shadow border-matcha/30 text-xs sm:text-sm italic text-gray-300">
+                        "From the morning pre-lecture pour-overs to 3 AM warehouse basslines—we link the minds driving Dubai's creative and tech underground."
+                    </div>
+                </div>
+                
+                <div class="lg:col-span-7 grid grid-cols-12 gap-3 sm:gap-4">
+                    <div class="col-span-12 sm:col-span-8 relative group overflow-hidden brutal-border brutal-shadow h-48 sm:h-64 bg-zinc-800">
+                        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSZYqPl8t_zA1k4UkoYPxV5yc5uL7BjlSKXLYvVsGBUSw&s=10" alt="Coffee" class="w-full h-full object-cover  contrast-125 group-hover:scale-105 transition-transform duration-500">
+                    </div>
+                    <div class="col-span-6 sm:col-span-4 relative group overflow-hidden brutal-border brutal-shadow h-48 sm:h-64 bg-zinc-800">
+                        <img src="https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&fit=crop&q=80&w=400" alt="Rave" class="w-full h-full object-cover filter grayscale contrast-150 mix-blend-screen group-hover:scale-105 transition-transform duration-500">
+                    </div>
+                    <div class="col-span-6 sm:col-span-4 relative group overflow-hidden brutal-border brutal-shadow h-40 sm:h-48 bg-zinc-800">
+                        <img src="https://images.unsplash.com/photo-1507133750040-4a8f57021571?auto=format&fit=crop&q=80&w=400" alt="Espresso" class="w-full h-full object-cover filter grayscale brightness-75 group-hover:scale-105 transition-transform duration-500">
+                    </div>
+                    <div class="col-span-12 sm:col-span-8 relative group overflow-hidden brutal-border brutal-shadow h-40 sm:h-48 bg-zinc-800">
+                        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTAW36Xxn4khUq8h3M8fYJAI7bOu9_BvByaMp1QpFoc_F6xmmwTfum4etyv&s=10" alt="Warehouse" class="w-full h-full object-cover rotate-60 group-hover:scale-150 transition-transform duration-500">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="events" class="max-w-7xl mx-auto px-4 sm:px-6 py-20 sm:py-32 border-t-2 border-cream">
+            <div class="mb-12">
+                <div class="text-xs uppercase tracking-widest text-matcha font-mono mb-2">// UPCOMING BASELINES</div>
+                <h3 class="text-3xl sm:text-4xl font-extrabold tracking-tight">UPCOMING ASSEMBLIES</h3>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="bg-roast brutal-border p-5 sm:p-6 brutal-shadow flex flex-col justify-between">
+                    <div>
+                        <div class="flex justify-between items-center border-b border-gray-700 pb-4 mb-4">
+                            <span class="text-[10px] sm:text-xs uppercase font-mono bg-espresso text-matcha px-2 py-1 border border-matcha">01 // POP-UP RAVE</span>
+                            <span class="text-[10px] sm:text-xs font-bold font-mono">SEPTEMBER 20</span>
+                        </div>
+                        <h4 class="text-xl sm:text-2xl font-extrabold tracking-tight text-cream">Off-Court Social</h4>
+                        <p class="text-xs sm:text-sm text-gray-400 mt-2">Deep house loops, industrial minimalism, and infinite shots of cold brew.</p>
+                    </div>
+                    <div class="mt-8 pt-4 border-t border-gray-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                        <span class="text-xs text-matcha font-mono">SECRET LOCATION</span>
+                        <a href="https://lu.ma" target="_blank" class="w-full sm:w-auto bg-caramel text-espresso font-black px-4 py-2 brutal-border brutal-shadow-luma text-xs tracking-wider text-center hover:bg-cream transition-all">FIND OUT ON LUMA ↗</a>
+                    </div>
+                </div>
+                <div class="bg-roast brutal-border p-5 sm:p-6 brutal-shadow flex flex-col justify-between">
+                    <div>
+                        <div class="flex justify-between items-center border-b border-gray-700 pb-4 mb-4">
+                            <span class="text-[10px] sm:text-xs uppercase font-mono bg-espresso text-cream px-2 py-1 border border-cream">02 // EXTRACTION SESH</span>
+                            <span class="text-[10px] sm:text-xs font-bold font-mono">OCTOBER 10</span>
+                        </div>
+                        <h4 class="text-xl sm:text-2xl font-extrabold tracking-tight text-cream">PADEL POINT RAVE</h4>
+                        <p class="text-xs sm:text-sm text-gray-400 mt-2">Serve. Sip. Sync.</p>
+                    </div>
+                    <div class="mt-8 pt-4 border-t border-gray-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                        <span class="text-xs text-matcha font-mono">SECRET LOCATION</span>
+                        <a href="https://lu.ma" target="_blank" class="w-full sm:w-auto bg-caramel text-espresso font-black px-4 py-2 brutal-border brutal-shadow-luma text-xs tracking-wider text-center hover:bg-cream transition-all">FIND OUT ON LUMA ↗</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="directory" class="max-w-7xl mx-auto px-4 sm:px-6 py-20 sm:py-32 border-t-2 border-cream">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 gap-6">
+                <div>
+                    <h3 class="text-3xl sm:text-4xl font-extrabold tracking-tight">EXPLORE THE CAMPUS HUBS</h3>
+                    <p class="text-xs sm:text-sm text-gray-400 mt-2">Isolate nodes by university network or filter directly via skillset parameters.</p>
+                </div>
+                <div class="w-full md:w-72">
+                    <input type="text" id="directorySearch" onkeyup="searchDirectory()" placeholder="🔍 Search interests or majors..." class="w-full bg-roast brutal-border p-3 text-sm text-cream focus:outline-none focus:border-matcha">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 sm:gap-3 mb-12">
+                <button onclick="filterUni('ALL')" id="btn-ALL" class="bg-matcha text-espresso font-extrabold p-2.5 sm:p-3 brutal-border text-center tracking-wider text-[10px] sm:text-xs transition-all brutal-shadow">⚡ ALL HUBS</button>
+                <button onclick="filterUni('MDX')" id="btn-MDX" class="bg-roast text-cream font-extrabold p-2.5 sm:p-3 brutal-border text-center tracking-wider text-[10px] sm:text-xs hover:bg-cream hover:text-espresso transition-all">MIDDLESEX</button>
+                <button onclick="filterUni('UOWD')" id="btn-UOWD" class="bg-roast text-cream font-extrabold p-2.5 sm:p-3 brutal-border text-center tracking-wider text-[10px] sm:text-xs hover:bg-cream hover:text-espresso transition-all">UOWD</button>
+                <button onclick="filterUni('HWU')" id="btn-HWU" class="bg-roast text-cream font-extrabold p-2.5 sm:p-3 brutal-border text-center tracking-wider text-[10px] sm:text-xs hover:bg-cream hover:text-espresso transition-all">HERIOT-WATT</button>
+                <button onclick="filterUni('MUR')" id="btn-MUR" class="bg-roast text-cream font-extrabold p-2.5 sm:p-3 brutal-border text-center tracking-wider text-[10px] sm:text-xs hover:bg-cream hover:text-espresso transition-all">MURDOCH</button>
+                <button onclick="filterUni('CUR')" id="btn-CUR" class="bg-roast text-cream font-extrabold p-2.5 sm:p-3 brutal-border text-center tracking-wider text-[10px] sm:text-xs hover:bg-cream hover:text-espresso transition-all">CURTIN</button>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" id="directory-grid">
+                <div id="empty-state-notice" class="col-span-full text-center py-16 border-2 border-dashed border-gray-700 text-gray-500">
+                    <p class="text-xs sm:text-sm">Connecting to Supabase terminal cloud system...</p>
+                </div>
+            </div>
+
+            <div class="mt-12 text-center">
+        <a href="directory.html" class="inline-block bg-cream text-espresso font-black px-8 py-4 brutal-border brutal-shadow hover:bg-matcha transition-all text-sm uppercase tracking-widest">
+            VIEW ALL PROFILES ↗
+        </a>
+    </div>
+        </section>
+
+        <section id="join" class="max-w-7xl mx-auto px-4 sm:px-6 py-20 sm:py-32 border-t-2 border-cream">
+            <div class="max-w-2xl mx-auto">
+                <div class="text-center mb-10">
+                    <h3 class="text-2xl sm:text-3xl font-extrabold tracking-tight">JOIN THE COMMUNITY</h3>
+                    <p class="text-gray-400 text-xs sm:text-sm mt-2">Plug in your specs and load a profile blueprint snapshot to add your node.</p>
+                </div>
+                <form class="space-y-6" id="registrationForm">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-[10px] sm:text-xs font-bold uppercase tracking-wider mb-2 text-gray-300">Full Name</label>
+                            <input type="text" id="form-name" placeholder="Alex Smith" required class="w-full bg-roast brutal-border p-3 text-sm text-cream focus:outline-none focus:border-matcha">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] sm:text-xs font-bold uppercase tracking-wider mb-2 text-gray-300">Instagram Handle</label>
+                            <input type="text" id="form-handle" placeholder="@handle" required class="w-full bg-roast brutal-border p-3 text-sm text-cream focus:outline-none focus:border-matcha">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                        <div>
+                            <label class="block text-[10px] sm:text-xs font-bold uppercase tracking-wider mb-2 text-gray-300">University</label>
+                            <select id="form-uni" class="w-full bg-roast brutal-border p-3 text-sm text-cream focus:outline-none focus:border-matcha">
+                                <option value="MDX">Middlesex Dubai</option>
+                                <option value="UOWD">UOWD</option>
+                                <option value="HWU">Heriot-Watt Dubai</option>
+                                <option value="MUR">Murdoch University</option>
+                                <option value="CUR">Curtin University</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] sm:text-xs font-bold uppercase tracking-wider mb-2 text-gray-300">Course</label>
+                            <input type="text" id="form-course" placeholder="Design / CS" required class="w-full bg-roast brutal-border p-3 text-sm text-cream focus:outline-none focus:border-matcha">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] sm:text-xs font-bold uppercase tracking-wider mb-2 text-gray-300">Year</label>
+                            <select id="form-year" class="w-full bg-roast brutal-border p-3 text-sm text-cream focus:outline-none focus:border-matcha">
+                                <option>Year 1</option>
+                                <option>Year 2</option>
+                                <option>Year 3</option>
+                                <option>Year 4+</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] sm:text-xs font-bold uppercase tracking-wider mb-2 text-gray-300">Interests (Comma Separated)</label>
+                        <input type="text" id="form-interests" placeholder="Techno, Photography, Cold Brew" class="w-full bg-roast brutal-border p-3 text-sm text-cream focus:outline-none focus:border-matcha">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] sm:text-xs font-bold uppercase tracking-wider mb-2 text-gray-300">Profile Photo</label>
+                        <input type="file" id="form-photo" accept="image/*" class="w-full bg-roast brutal-border p-2.5 text-sm text-gray-400 file:mr-4 file:py-1 file:px-3 file:brutal-border file:text-xs file:font-bold file:bg-matcha file:text-espresso hover:file:bg-cream transition-all focus:outline-none">
+                    </div>
+                    <button type="submit" id="submitBtn" class="w-full bg-cream text-espresso font-extrabold py-3.5 sm:py-4 brutal-border brutal-shadow hover:bg-matcha hover:text-espresso transition-all text-sm sm:text-base">
+                        SUBMIT PROFILE TERMINAL
+                    </button>
+                </form>
+            </div>
+        </section>
+
+        <footer class="w-full border-t-2 border-cream bg-[#0B0604]/60">
+            <div class="max-w-7xl mx-auto px-4 sm:px-8 py-12 flex flex-col md:flex-row justify-between items-center gap-6">
+                <div>
+                    <h4 class="text-xl font-black tracking-tighter">unfiltered<span class="text-matcha">.</span></h4>
+                    <p class="text-xs text-gray-500 mt-1">© 2026 UNFILTERED COLLECTIVE. NO FILTERS ALLOWED.</p>
+                </div>
+                <div class="flex flex-col sm:flex-row gap-4 sm:gap-8 items-center font-mono text-sm tracking-tight">
+                    <a href="https://www.instagram.com/un.filtered.ftw/reels/" target="_blank" class="hover:text-matcha transition flex items-center gap-1.5">
+                        <span>IG:</span> <span class="underline">@unfiltered</span> ↗
+                    </a>
+                    <a href="mailto:unfilteredftw@gmail.com" class="hover:text-matcha transition flex items-center gap-1.5">
+                        <span>EMAIL:</span> <span class="underline">unfilteredftw@gmail.com</span> ↗
+                    </a>
+                </div>
+            </div>
+        </footer>
+
+    </div>
+
+    <script>
+        const SUPABASE_URL = "https://cwneumeguuzwkznfwadw.supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN3bmV1bWVndXV6d2t6bmZ3YWR3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMwMjAwMDMsImV4cCI6MjA5ODU5NjAwM30.zcHhWwSQb2DjpCgLHkzYSmLlseHhekKzcSXVtbxukH8";
+
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        let currentUniversityFilter = 'ALL';
+
+        document.addEventListener('DOMContentLoaded', fetchStudentsFromDatabase);
+        document.getElementById('registrationForm').addEventListener('submit', handleFormPipeline);
+
+        async function fetchStudentsFromDatabase() {
+            const grid = document.getElementById('directory-grid');
+            const notice = document.getElementById('empty-state-notice');
+
+            try {
+                let { data: students, error } = await _supabase
+                    .from('students')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                grid.innerHTML = '';
+                
+                if(!students || students.length === 0) {
+                    grid.appendChild(notice);
+                    notice.innerHTML = '<p class="text-xs sm:text-sm">The network matrix is currently clear. Be the first card node.</p>';
+                    return;
+                }
+
+                const uniLabels = { 'MDX': 'MDX DUBAI', 'UOWD': 'UOWD', 'HWU': 'HERIOT-WATT', 'MUR': 'MURDOCH', 'CUR': 'CURTIN' };
+
+                students.slice(0, 3).forEach(student =>  {
+                    const interestsArray = student.interests ? student.interests.split(',') : ['Coffee'];
+                    let tagsHtml = '';
+                    interestsArray.forEach(tag => {
+                        if(tag.trim()) tagsHtml += `<span class="text-[10px] bg-espresso px-2 py-0.5 rounded-full border border-gray-600">${tag.trim()}</span> `;
+                    });
+
+                    const fallbackImage = 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=150';
+                    const renderImg = student.photo_url ? student.photo_url : fallbackImage;
+
+                    const card = document.createElement('div');
+                    card.className = "student-card bg-roast brutal-border p-5 sm:p-6 flex flex-col justify-between";
+                    card.setAttribute('data-uni', student.university);
+                    
+                    const randomDelay = (Math.random() * -5).toFixed(2);
+                    card.style.animationDelay = `${randomDelay}s`;
+
+                    card.innerHTML = `
+                        <div>
+                            <div class="flex justify-between items-start">
+                                <span class="text-[10px] font-bold bg-espresso text-matcha px-2 py-0.5 brutal-border">${uniLabels[student.university] || student.university}</span>
+                                <span class="text-xs text-gray-400">${student.year}</span>
+                            </div>
+                            <div class="flex gap-4 items-center mt-4">
+                                <div class="w-16 h-16 shrink-0 brutal-border overflow-hidden bg-zinc-800">
+                                    <img src="${renderImg}" class="w-full h-full object-cover" onerror="this.src='${fallbackImage}'">
+                                </div>
+                                <div>
+                                    <h4 class="text-lg font-bold name-field leading-tight">${student.name}</h4>
+                                    <p class="text-xs text-gray-400 major-field mt-0.5">${student.course}</p>
+                                </div>
+                            </div>
+                            <div class="flex flex-wrap gap-1.5 mt-4 interests-container">
+                                ${tagsHtml}
+                            </div>
+                        </div>
+                        <a href="https://instagram.com/${student.instagram.replace('@','')}" target="_blank" class="mt-6 inline-block text-sm font-bold text-matcha hover:underline">${student.instagram.startsWith('@') ? student.instagram : '@' + student.instagram} ↗</a>
+                    `;
+                    grid.appendChild(card);
+                });
+
+                searchDirectory();
+
+            } catch (err) {
+    console.error("System Error loading matrix:", err);
+    if(notice) notice.innerHTML = `<p class="text-xs text-red-400">Database Connection Interrupted: ${err.message}</p>`; // <-- Fixed!
+}
+        }
+
+        async function handleFormPipeline(e) {
+            e.preventDefault();
+            const btn = document.getElementById('submitBtn');
+            btn.innerText = "UPLOADING ASSETS...";
+            btn.disabled = true;
+
+            const name = document.getElementById('form-name').value.trim();
+            const handle = document.getElementById('form-handle').value.trim();
+            const uni = document.getElementById('form-uni').value;
+            const course = document.getElementById('form-course').value.trim();
+            const year = document.getElementById('form-year').value;
+            const interests = document.getElementById('form-interests').value.trim();
+            const fileInput = document.getElementById('form-photo');
+            const file = fileInput.files[0];
+
+            let finalPhotoUrl = null;
+
+            try {
+                if (file) {
+                    const fileExt = file.name.split('.').pop();
+                    const fileName = `${Math.random().toString(36).substring(2)}-${Date.now()}.${fileExt}`;
+                    const filePath = `avatars/${fileName}`;
+
+                    let { error: uploadError } = await _supabase.storage
+                        .from('student-photos')
+                        .upload(filePath, file);
+
+                    if (uploadError) throw uploadError;
+
+                    const { data } = _supabase.storage
+                        .from('student-photos')
+                        .getPublicUrl(filePath);
+
+                    finalPhotoUrl = data.publicUrl;
+                }
+
+                const { error: insertError } = await _supabase
+                    .from('students')
+                    .insert([{
+                        name: name,
+                        instagram: handle,
+                        university: uni,
+                        course: course,
+                        year: year,
+                        interests: interests,
+                        photo_url: finalPhotoUrl
+                    }]);
+
+                if (insertError) throw insertError;
+
+                document.getElementById('registrationForm').reset();
+                await fetchStudentsFromDatabase();
+                document.getElementById('directory').scrollIntoView({ behavior: 'smooth' });
+
+            } catch (error) {
+                alert("Matrix injection failed: " + error.message);
+                console.error(error);
+            } finally {
+                btn.innerText = "SUBMIT PROFILE TERMINAL";
+                btn.disabled = false;
+            }
+        }
+
+        function filterUni(uniCode) {
+            currentUniversityFilter = uniCode;
+            const buttons = ['ALL', 'MDX', 'UOWD', 'HWU', 'MUR', 'CUR'];
+            buttons.forEach(btn => {
+                const element = document.getElementById(`btn-${btn}`);
+                if(btn === uniCode) {
+                    element.className = "bg-matcha text-espresso font-extrabold p-2.5 sm:p-3 brutal-border text-center tracking-wider text-[10px] sm:text-xs transition-all brutal-shadow";
+                } else {
+                    element.className = "bg-roast text-cream font-extrabold p-2.5 sm:p-3 brutal-border text-center tracking-wider text-[10px] sm:text-xs hover:bg-cream hover:text-espresso transition-all";
+                }
+            });
+            searchDirectory();
+        }
+
+        function searchDirectory() {
+            const searchVal = document.getElementById('directorySearch').value.toLowerCase();
+            const cards = document.querySelectorAll('.student-card');
+
+            cards.forEach(card => {
+                const cardUni = card.getAttribute('data-uni');
+                const nameText = card.querySelector('.name-field').innerText.toLowerCase();
+                const majorText = card.querySelector('.major-field').innerText.toLowerCase();
+
+                const matchesUni = (currentUniversityFilter === 'ALL' || cardUni === currentUniversityFilter);
+                const matchesSearch = (nameText.includes(searchVal) || majorText.includes(searchVal));
+
+                if(matchesUni && matchesSearch) {
+                    card.style.display = 'flex';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+    </script>
+</body>
+</html>
