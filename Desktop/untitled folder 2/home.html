@@ -251,6 +251,9 @@
             <h4 class="text-xl sm:text-2xl font-extrabold tracking-tight text-cream">Off-Court Social</h4>
             <p class="text-xs sm:text-sm text-gray-400 mt-2">Deep house loops, industrial minimalism, and infinite shots of cold brew.</p>
         </div>
+        <div class="mt-2 text-xs sm:text-sm text-caramel">
+  <strong>Venue:</strong> ANNOUNCING SOON
+</div>
         <div class="mt-8 pt-4 border-t border-gray-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <span id="timer-rave" class="text-xs text-matcha font-mono">00D 00H 00M 00S</span>
             <a href="https://lu.ma" target="_blank" class="w-full sm:w-auto bg-caramel text-espresso font-black px-4 py-2 brutal-border brutal-shadow-luma text-xs tracking-wider text-center hover:bg-cream transition-all">FIND OUT ON LUMA ↗</a>
@@ -266,6 +269,10 @@
             <h4 class="text-xl sm:text-2xl font-extrabold tracking-tight text-cream">PADEL POINT RAVE</h4>
             <p class="text-xs sm:text-sm text-gray-400 mt-2">Serve. Sip. Sync.</p>
         </div>
+
+        <div class="mt-2 text-xs sm:text-sm text-caramel">
+  <strong>Venue:</strong> ANNOUNCING SOON
+</div>
         <div class="mt-8 pt-4 border-t border-gray-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <span id="timer-padel" class="text-xs text-matcha font-mono">00D 00H 00M 00S</span>
             <a href="https://lu.ma" target="_blank" class="w-full sm:w-auto bg-caramel text-espresso font-black px-4 py-2 brutal-border brutal-shadow-luma text-xs tracking-wider text-center hover:bg-cream transition-all">FIND OUT ON LUMA ↗</a>
@@ -360,6 +367,10 @@
                     <button type="submit" id="submitBtn" class="w-full bg-cream text-espresso font-extrabold py-3.5 sm:py-4 brutal-border brutal-shadow hover:bg-matcha hover:text-espresso transition-all text-sm sm:text-base">
                         SUBMIT PROFILE TERMINAL
                     </button>
+
+                    <p class="text-xs text-gray-400 mt-2 text-center">
+  * To update your profile, click <a href="https://docs.google.com/forms/d/e/1FAIpQLSfPl4SlCbyDBCHnIHwIRMpWfeH38zF_Q5GAW8KwanSEFOhCXQ/viewform?usp=dialog" target="_blank" class="underline hover:text-white">here</a>.
+</p>
                 </form>
             </div>
         </section>
@@ -469,6 +480,12 @@
                     <div>
                         <h4 class="text-lg font-bold name-field leading-tight">${student.name}</h4>
                         <p class="text-xs text-gray-400 major-field mt-0.5">${student.course}</p>
+                        
+                        ${(student.instagram || student.handle) ? `
+                            <a href="https://instagram.com/${(student.instagram || student.handle).replace(/^@/, '').trim()}" target="_blank" rel="noopener noreferrer" class="text-[11px] text-matcha hover:underline mt-1 flex items-center gap-1 font-mono w-fit relative z-10">
+                                <span>@</span><span>${(student.instagram || student.handle).replace(/^@/, '').trim()}</span>
+                            </a>
+                        ` : ''}
                     </div>
                 </div>
                 <div class="flex flex-wrap gap-1.5 mt-4 interests-container">
@@ -648,6 +665,9 @@ allCards.forEach(card => {
     initClocks();
 
     
+</script>
+<script>
+(function(){if(!window.chatbase||window.chatbase("getState")!=="initialized"){window.chatbase=(...arguments)=>{if(!window.chatbase.q){window.chatbase.q=[]}window.chatbase.q.push(arguments)};window.chatbase=new Proxy(window.chatbase,{get(target,prop){if(prop==="q"){return target.q}return(...args)=>target(prop,...args)}})}const onLoad=function(){const script=document.createElement("script");script.src="https://www.chatbase.co/embed.min.js";script.id="VLfXw7rIBYMssHcNQ24gC";script.domain="www.chatbase.co";document.body.appendChild(script)};if(document.readyState==="complete"){onLoad()}else{window.addEventListener("load",onLoad)}})();
 </script>
 </body>
 </html>
